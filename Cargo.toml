@@ -1,0 +1,8 @@
+[package]
+name = "vmd"
+version = "0.1.0"
+edition = "2021"
+authors = ["Ville Ilvonen <ville.ilvonen@unikie.com>", ]
+
+[dependencies]
+kvm-ioctls = { version = "0.12.0" }
