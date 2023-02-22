@@ -1,10 +1,22 @@
-use super::*;
+extern crate kvm_ioctls;
+extern crate kvm_bindings;
+
+use kvm_ioctls::VcpuExit;
+use kvm_ioctls::{Kvm, VcpuFd, VmFd};
 
 pub fn kvm_simple_vm() {
+    use std::io::Write;
+    use std::ptr::null_mut;
+    use std::slice;
+
+    use kvm_bindings::kvm_userspace_memory_region;
+    use kvm_bindings::KVM_MEM_LOG_DIRTY_PAGES;
+
     let mem_size = 0x4000;
     let guest_addr = 0x1000;
     let asm_code: &[u8];
-     // Setting up architectural dependent values.
+
+    // Setting up architectural dependent values.
     #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
     {
         asm_code = &[
@@ -29,11 +41,14 @@ pub fn kvm_simple_vm() {
             0x14, /* b <this address>; shouldn't get here, but if so loop forever */
         ];
     }
-     // 1. Instantiate KVM.
+
+    // 1. Instantiate KVM.
     let kvm = Kvm::new().unwrap();
-     // 2. Create a VM.
+
+    // 2. Create a VM.
     let vm = kvm.create_vm().unwrap();
-     // 3. Initialize Guest Memory.
+
+    // 3. Initialize Guest Memory.
     let load_addr: *mut u8 = unsafe {
         libc::mmap(
             null_mut(),
@@ -44,6 +59,7 @@ pub fn kvm_simple_vm() {
             0,
         ) as *mut u8
     };
+
     let slot = 0;
     // When initializing the guest memory slot specify the
     // `KVM_MEM_LOG_DIRTY_PAGES` to enable the dirty log.
@@ -55,14 +71,17 @@ pub fn kvm_simple_vm() {
         flags: KVM_MEM_LOG_DIRTY_PAGES,
     };
     unsafe { vm.set_user_memory_region(mem_region).unwrap() };
-     // Write the code in the guest memory. This will generate a dirty page.
+
+    // Write the code in the guest memory. This will generate a dirty page.
     unsafe {
         let mut slice = slice::from_raw_parts_mut(load_addr, mem_size);
         slice.write(&asm_code).unwrap();
     }
-     // 4. Create one vCPU.
+
+    // 4. Create one vCPU.
     let vcpu_fd = vm.create_vcpu(0).unwrap();
-     // 5. Initialize general purpose and special registers.
+
+    // 5. Initialize general purpose and special registers.
     #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
     {
         // x86_64 specific registry setup.
@@ -70,25 +89,29 @@ pub fn kvm_simple_vm() {
         vcpu_sregs.cs.base = 0;
         vcpu_sregs.cs.selector = 0;
         vcpu_fd.set_sregs(&vcpu_sregs).unwrap();
-         let mut vcpu_regs = vcpu_fd.get_regs().unwrap();
+
+        let mut vcpu_regs = vcpu_fd.get_regs().unwrap();
         vcpu_regs.rip = guest_addr;
         vcpu_regs.rax = 2;
         vcpu_regs.rbx = 3;
         vcpu_regs.rflags = 2;
         vcpu_fd.set_regs(&vcpu_regs).unwrap();
     }
-     #[cfg(target_arch = "aarch64")]
+
+    #[cfg(target_arch = "aarch64")]
     {
         // aarch64 specific registry setup.
         let mut kvi = kvm_bindings::kvm_vcpu_init::default();
         vm.get_preferred_target(&mut kvi).unwrap();
         vcpu_fd.vcpu_init(&kvi).unwrap();
-       let core_reg_base: u64 = 0x6030_0000_0010_0000;
+
+        let core_reg_base: u64 = 0x6030_0000_0010_0000;
         let mmio_addr: u64 = guest_addr + mem_size as u64;
         vcpu_fd.set_one_reg(core_reg_base + 2 * 32, guest_addr as u128); // set PC
         vcpu_fd.set_one_reg(core_reg_base + 2 * 0, mmio_addr as u128); // set X0
     }
-     // 6. Run code on the vCPU.
+
+    // 6. Run code on the vCPU.
     loop {
         match vcpu_fd.run().expect("run failed") {
             VcpuExit::IoIn(addr, data) => {

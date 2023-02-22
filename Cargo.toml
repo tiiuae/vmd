@@ -6,5 +6,5 @@ authors = ["Ville Ilvonen <ville.ilvonen@unikie.com>", ]
 
 [dependencies]
 kvm-ioctls = "0.13.0"
-kvm-bindings = "0.3"
+kvm-bindings = "0.6"
 libc = "0.2"
