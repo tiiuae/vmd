@@ -35,11 +35,11 @@ Proposed
 
 ### Loose coupling
 
-`vmd` as a system component is weakly associated with both client applications and underlying interfaces. In practice, this could be achieved for example with RESt API where get/set operations are atomic per operation. Other loosely coupled interfaces than RESt API can be considered as this design is at proposed state.
+`vmd` as a system component is weakly associated with both client applications and underlying interfaces. In practice, this could be achieved for example with REST API where get/set operations are atomic per operation. Other loosely coupled interfaces than RESt API can be considered as this design is at proposed state.
 
 Other area of loose coupling is the system graphics architecture. `vmd` does not provide clients with information on the guest virtual machine graphics or GUI views. In practice, the host of `vmd` may or may not have Wayland compositor *but* the `vmd` does not provide its' clients any information on the Wayland or X clients. This decoupling is:
 * practical - a ghaf system may be headless
-* performance-driven - routing Wayland protocol through `vmd` is overhead and
+* performance-driven - routing Wayland protocol through `vmd` is overhead. `vmd` server would not use client Wayland protocol on host for anything else but routing it to `vmd` client. This is because the Wayland compositor is not designed to be placed on host due to Ghaf platform GUI VM isolation. Decoupling this dependency provides better performance.
 * security - `vmd` does not need to "see" what's in the guest virtual machines Wayland client views
 
 If `vmd` clients need to provide views to either Wayland client views or the system view of Wayland compositor, the `vmd` clients are encouraged to obtain the information from those sources directly.
@@ -51,6 +51,10 @@ If `vmd` clients need to provide views to either Wayland client views or the sys
 ### Distributed
 
 `vmd` backend supports distributed clients. Clients may run within the same system (inside the host or in guest virtual machines) or may access the `vmd` using secure connection over the internet. This supports graphical, command-line and web app clients - depending on the need and use case.
+
+Distributed clients are served with asynchronous run-time (see overview diagram - rocket with tokio) grants the event loop with atomic operations.
+
+To protect the `vmd` server and host from multiple clients trying change operations simultaneously, the asynchronous run-time can serve the requests in order and return e.g. `busy` for pending async VM change (e.g. VM restart that will take time). As this kind of scenario also concerns leak of information (operations of other clients) and denial-of-service (multiple VM changes), this is recommended to be accounted separately in `vmd` threat model. At high level, one option is to place a policy engine (e.g. zero trust architecture) to process the `vmd` backend requests.
 
 ## Considered alternatives
 
