@@ -1,8 +1,12 @@
 mod kvm_util;
 
-use crate::kvm_util::get_kvm_api_version;
-
 fn main() {
-    let api_version: i32 =  get_kvm_api_version();
-    println!("hello kvm_api {}", api_version)
+    match kvm_util::check_kvm_api_version() {
+        Ok(version) => println!("KVM API version: {}", version),
+        Err(e) => eprintln!("Error: {:?}", e),
+    }
+    match kvm_util::check_kvm_extensions() {
+        Ok(()) => println!("KVM extensions OK"),
+        Err(e) => eprintln!("Error: {:?}", e),
+    }
 }

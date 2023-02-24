@@ -6,3 +6,4 @@ authors = ["Ville Ilvonen <ville.ilvonen@unikie.com>", ]
 
 [dependencies]
 kvm-ioctls = { version = "0.12.0" }
+thiserror = "1.0.38"
