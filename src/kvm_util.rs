@@ -1,4 +1,3 @@
-#![allow(unused)]
 use kvm_ioctls::{
     Kvm, Cap
 };
@@ -6,6 +5,8 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum VdmError {
+    #[error("No KVM support")]
+    NoKvmPresent,
     #[error("Requires KVM version {REQUIRED_KVM_API_VERSION} or higher")]
     IncorrectKvmApiVersion(i32),
     #[error("Missing the following KVM extensions {0:?}")]
@@ -32,12 +33,12 @@ pub const REQUIRED_KVM_EXTENSIONS: [Cap; 1] = [
 /// }
 /// ```
 pub fn check_kvm_api_version() -> Result<i32, VdmError> {
-    let kvm = Kvm::new().unwrap();
-    let api_version = kvm.get_api_version();
-    if api_version < REQUIRED_KVM_API_VERSION {
-        return Err(VdmError::IncorrectKvmApiVersion(api_version));
+    let kvm = Kvm::new().map_err(|_| VdmError::NoKvmPresent)?;
+    let version = kvm.get_api_version();
+    if version < REQUIRED_KVM_API_VERSION {
+        return Err(VdmError::IncorrectKvmApiVersion(version));
     }
-    Ok(api_version)
+    Ok(version)
 }
 
 /// Check if device has the required KVM extensions. In case of
@@ -53,17 +54,18 @@ pub fn check_kvm_api_version() -> Result<i32, VdmError> {
 /// }
 /// ```
 pub fn check_kvm_extensions() -> Result<(), VdmError> {
-    let kvm = Kvm::new().unwrap();
+    let kvm = Kvm::new().map_err(|_| VdmError::NoKvmPresent)?;
     let mut missing_extensions = Vec::new();
-    for extension in &REQUIRED_KVM_EXTENSIONS {
+    for extension in REQUIRED_KVM_EXTENSIONS.iter() {
         if !kvm.check_extension(*extension) {
             missing_extensions.push(*extension);
         }
     }
-    if !missing_extensions.is_empty() {
-        return Err(VdmError::MissingExtensions(missing_extensions));
+    if missing_extensions.is_empty() {
+        Ok(())
+    } else {
+        Err(VdmError::MissingExtensions(missing_extensions))
     }
-    Ok(())
 }
 
 #[cfg(test)]
