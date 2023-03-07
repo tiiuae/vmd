@@ -1,8 +1,6 @@
 [workspace]
 
 members = [
-    "vmd-common",
     "vmd-server",
-    "vmd-client",
 ]
 

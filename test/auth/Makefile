@@ -31,14 +31,7 @@ CLIENT_SUBJECT=/C=$(COUNTRY)/ST=$(STATE)/L=$(LOCALITY)/O=$(ORGANIZATION)/OU=$(OR
 
 all: ca server client
 
-ca: $(DIR)
-	@echo "Generating CA key and certificate"
-	@openssl req -new -$(PROTOCOL)	\
-		-days $(VALIDITY_DAYS)		\
-		-keyout $(CA_KEY)			\
-		-out $(CA_CRT)				\
-		-passout pass:$(PASSWORD)	\
-		-subj "$(CA_SUBJECT)"
+ca: $(DIR) $(CA_CRT)
 
 server: $(CA_CRT)
 	@echo "Generating vmd-server key and certificate signing request"
@@ -75,7 +68,13 @@ client: $(CA_CRT)
 	@openssl verify -CAfile $(CA_CRT) $(VMD_CLIENT_CRT)
 
 $(CA_CRT):
-	$(MAKE) ca
+	@echo "Generating CA key and certificate"
+	@openssl req -new -$(PROTOCOL)	\
+		-days $(VALIDITY_DAYS)		\
+		-keyout $(CA_KEY)			\
+		-out $(CA_CRT)				\
+		-passout pass:$(PASSWORD)	\
+		-subj "$(CA_SUBJECT)"
 
 $(DIR):
 	mkdir -p $(DIR)
