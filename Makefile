@@ -1,7 +1,7 @@
 all: create-test-certs build
 
 create-test-certs:
-	make -C auth
+	make -C test/auth
 
 build:
 	cargo build --release
@@ -10,7 +10,7 @@ clean:
 	cargo clean
 
 fclean: clean
-	make fclean -C auth
+	make fclean -C test/auth
 
 re: fclean all
 
