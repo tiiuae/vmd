@@ -3,16 +3,16 @@ PROTOCOL=x509
 KEY_SIZE=4096
 VALIDITY_DAYS=9999
 
-CA_KEY=$(DIR)/ca-key.pem
-CA_CRT=$(DIR)/ca-crt.pem
+CA_KEY=$(DIR)/sample-ca-key.pem
+CA_CRT=$(DIR)/sample-ca-crt.pem
 
-VMD_SERVER_KEY=$(DIR)/vmd-server-key.pem
-VMD_SERVER_CSR=$(DIR)/vmd-server-csr.pem
-VMD_SERVER_CRT=$(DIR)/vmd-server-crt.pem
+VMD_SERVER_KEY=$(DIR)/sample-vmd-server-key.pem
+VMD_SERVER_CSR=$(DIR)/sample-vmd-server-csr.pem
+VMD_SERVER_CRT=$(DIR)/sample-vmd-server-crt.pem
 
-VMD_CLIENT_KEY=$(DIR)/vmd-client-key.pem
-VMD_CLIENT_CSR=$(DIR)/vmd-client-csr.pem
-VMD_CLIENT_CRT=$(DIR)/vmd-client-crt.pem
+VMD_CLIENT_KEY=$(DIR)/sample-vmd-client-key.pem
+VMD_CLIENT_CSR=$(DIR)/sample-vmd-client-csr.pem
+VMD_CLIENT_CRT=$(DIR)/sample-vmd-client-crt.pem
 
 COUNTRY=FI
 STATE=Uusimaa
@@ -20,7 +20,7 @@ LOCALITY=Helsinki
 ORGANIZATION=VMD
 ORGANIZATION_UNIT=VMD
 
-CA_COMMON_NAME=ca-vmd
+CA_COMMON_NAME=vmd-ca
 VMD_SERVER_COMMON_NAME=vmd-server
 VMD_CLIENT_COMMON_NAME=vmd-client
 
@@ -40,7 +40,7 @@ ca: $(DIR)
 		-passout pass:$(PASSWORD)	\
 		-subj "$(CA_SUBJECT)"
 
-server: $(CA_CRT) 
+server: $(CA_CRT)
 	@echo "Generating vmd-server key and certificate signing request"
 	@openssl genrsa -out $(VMD_SERVER_KEY) $(KEY_SIZE)
 	@openssl req -new				\
