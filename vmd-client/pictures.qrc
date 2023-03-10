@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/pic">
+        <file alias="shield">pictures/Shield.png</file>
+        <file alias="power">pictures/Shutdown.png</file>
+        <file alias="settings">pictures/Settings.png</file>
+        <file alias="close">pictures/Close.png</file>
+        <file alias="filler">pictures/Vector.png</file>
+        <file alias="lock">pictures/lock.png</file>
+        <file alias="high_risk">pictures/High.svg</file>
+        <file alias="medium_risk">pictures/Medium alert.svg</file>
+        <file alias="no_risk">pictures/Status OK.svg</file>
+        <file alias="pause">pictures/Pause negative.svg</file>
+    </qresource>
+</RCC>
