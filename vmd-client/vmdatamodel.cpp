@@ -7,7 +7,7 @@ VMDataModel::VMDataModel(QObject *parent)
 }
 
 int VMDataModel::rowCount(const QModelIndex & parent) const {
-    Q_UNUSED(parent);//table model
+    Q_UNUSED(parent);//table model, no parent
     return parameters.count();
 }
 
@@ -50,7 +50,7 @@ bool VMDataModel::setData(const QModelIndex &index, const QVariant &value, int r
 Qt::ItemFlags VMDataModel::flags(const QModelIndex &index) const
 {
     Q_UNUSED(index)
-    return Qt::ItemIsEditable | Qt::ItemIsSelectable;//is it needed for power on/off?
+    return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 }
 
 void VMDataModel::addData(const Parameter &Parameter)
