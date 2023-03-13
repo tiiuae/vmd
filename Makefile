@@ -9,7 +9,7 @@ test-curl-server:
 	curl --cert test/auth/certs/sample-vmd-client-crt.pem	\
 		--key test/auth/certs/sample-vmd-client-key.pem		\
 		--cacert test/auth/certs/sample-ca-crt.pem			\
-		http://localhost:8000/kvm_api_version
+		http://localhost:8000/
 
 build:
 	cargo build --release
