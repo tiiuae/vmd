@@ -1,0 +1,14 @@
+# The certificate key pairs used here were generated with openssl via the
+# 'private/gen_certs.sh' script.
+#
+# These certificates are self-signed. As such, you will need to trust them
+# directly for your browser to show connections as secure. You should NEVER use
+# these certificate/key pairs. They are here for DEMONSTRATION PURPOSES ONLY.
+
+[default.tls]
+certs = "../test/auth/certs/sample-vmd-server-crt.pem"
+key = "../test/auth/certs/sample-vmd-server-key.pem"
+
+[default.tls.mutual]
+ca_certs = "../test/auth/certs/sample-ca-crt.pem"
+mandatory = false
