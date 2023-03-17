@@ -36,44 +36,44 @@ ca: $(DIR) $(CA_CRT)
 server: $(CA_CRT)
 	@echo "Generating vmd-server key and certificate signing request"
 	@openssl genrsa -out $(VMD_SERVER_KEY) $(KEY_SIZE)
-	@openssl req -new				\
-		-key $(VMD_SERVER_KEY)		\
-		-out $(VMD_SERVER_CSR)		\
-		-passin pass:$(PASSWORD)	\
+	@openssl req -new \
+		-key $(VMD_SERVER_KEY) \
+		-out $(VMD_SERVER_CSR) \
+		-passin pass:$(PASSWORD) \
 		-subj "$(SERVER_SUBJECT)"
-	@openssl $(PROTOCOL) -req				\
-		-days $(VALIDITY_DAYS)				\
-		-in $(VMD_SERVER_CSR)				\
-		-CA $(CA_CRT)						\
-		-CAkey $(CA_KEY) -CAcreateserial	\
-		-passin pass:$(PASSWORD)			\
+	@openssl $(PROTOCOL) -req \
+		-days $(VALIDITY_DAYS) \
+		-in $(VMD_SERVER_CSR) \
+		-CA $(CA_CRT) \
+		-CAkey $(CA_KEY) -CAcreateserial \
+		-passin pass:$(PASSWORD) \
 		-out $(VMD_SERVER_CRT)
 	@openssl verify -CAfile $(CA_CRT) $(VMD_SERVER_CRT)
 
 client: $(CA_CRT)
 	@echo "Generating client key and certificate signing request"
 	@openssl genrsa -out $(VMD_CLIENT_KEY) $(KEY_SIZE)
-	@openssl req -new				\
-		-key $(VMD_CLIENT_KEY)		\
-		-out $(VMD_CLIENT_CSR)		\
-		-passin pass:$(PASSWORD)	\
+	@openssl req -new \
+		-key $(VMD_CLIENT_KEY) \
+		-out $(VMD_CLIENT_CSR) \
+		-passin pass:$(PASSWORD) \
 		-subj "$(CLIENT_SUBJECT)"
-	@openssl $(PROTOCOL) -req				\
-		-days $(VALIDITY_DAYS)				\
-		-in $(VMD_CLIENT_CSR)				\
-		-CA $(CA_CRT)						\
-		-CAkey $(CA_KEY) -CAcreateserial	\
-		-passin pass:$(PASSWORD)			\
+	@openssl $(PROTOCOL) -req \
+		-days $(VALIDITY_DAYS) \
+		-in $(VMD_CLIENT_CSR) \
+		-CA $(CA_CRT) \
+		-CAkey $(CA_KEY) -CAcreateserial \
+		-passin pass:$(PASSWORD) \
 		-out $(VMD_CLIENT_CRT)
 	@openssl verify -CAfile $(CA_CRT) $(VMD_CLIENT_CRT)
 
 $(CA_CRT):
 	@echo "Generating CA key and certificate"
-	@openssl req -new -$(PROTOCOL)	\
-		-days $(VALIDITY_DAYS)		\
-		-keyout $(CA_KEY)			\
-		-out $(CA_CRT)				\
-		-passout pass:$(PASSWORD)	\
+	@openssl req -new -$(PROTOCOL) \
+		-days $(VALIDITY_DAYS) \
+		-keyout $(CA_KEY) \
+		-out $(CA_CRT) \
+		-passout pass:$(PASSWORD) \
 		-subj "$(CA_SUBJECT)"
 
 $(DIR):

@@ -6,9 +6,9 @@ generate-sample-certs:
 	make -C test/auth
 
 test-curl-server:
-	curl --cert test/auth/certs/sample-vmd-client-crt.pem	\
-		--key test/auth/certs/sample-vmd-client-key.pem		\
-		--cacert test/auth/certs/sample-ca-crt.pem			\
+	curl --cert test/auth/certs/sample-vmd-client-crt.pem \
+		--key test/auth/certs/sample-vmd-client-key.pem \
+		--cacert test/auth/certs/sample-ca-crt.pem \
 		http://localhost:8000/
 
 build:
