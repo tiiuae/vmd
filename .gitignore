@@ -2,3 +2,5 @@ target
 *.lock
 **/*.pro.user
 **/result
+test/auth/certs
+*.lock
