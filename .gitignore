@@ -3,3 +3,4 @@ target
 **/*.pro.user
 **/result
 test/auth/certs
+Makefile
