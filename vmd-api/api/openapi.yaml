@@ -60,9 +60,9 @@ paths:
                 $ref: '#/components/schemas/VirtualMachineInfo'
           description: successful operation
         "400":
-          description: Invalid virtual machines ID
+          description: Invalid virtual machine ID
         "404":
-          description: Virtual machines ID not found
+          description: Virtual machine ID is valid but not found
         default:
           content:
             application/json:
@@ -77,7 +77,7 @@ paths:
       description: Control the virtual machine by ID
       operationId: vmAction
       parameters:
-      - description: Control action to the virtual machine
+      - description: An action is a command used to control the virtual machine
         example: start
         explode: false
         in: path
@@ -114,7 +114,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
           description: error payload
-      summary: Request control action to the virtual machine by the ID
+      summary: Request to perform a control action on the virtual machine by its ID
       tags:
       - vm
 components:
