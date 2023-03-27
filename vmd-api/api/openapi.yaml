@@ -107,7 +107,7 @@ paths:
         "400":
           description: Invalid virtual machine ID
         "404":
-          description: Virtual machines ID not found
+          description: Virtual machine ID is valid but not found
         default:
           content:
             application/json:
