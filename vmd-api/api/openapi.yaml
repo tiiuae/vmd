@@ -162,7 +162,7 @@ components:
           name: GUI VM
           description: GUI Virtual Machine
           id: 101
-          state: Running
+          state: R
         startTime: ""
         runningTime: ""
       properties:
@@ -192,17 +192,22 @@ components:
         name: GUI VM
         description: GUI Virtual Machine
         id: 101
-        state: Running
+        state: R
       properties:
         id:
           example: 101
         state:
           enum:
-          - Stopped
-          - Starting
-          - Running
-          - Stopping
-          example: Running
+          - D
+          - I
+          - R
+          - S
+          - T
+          - TDebug
+          - W
+          - X
+          - Z
+          example: R
         name:
           example: GUI VM
         description:
