@@ -1,0 +1,28 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>TileItemDelegate.qml</file>
+        <file>DetailsView.qml</file>
+        <file>ProgressCircle.qml</file>
+        <file>InfoTileItem.qml</file>
+        <file>qmldir</file>
+        <file>Constants.qml</file>
+        <file>TileMenu.qml</file>
+        <file>ActionButton.qml</file>
+        <file>ToolButtonBackground.qml</file>
+        <file>ToolButtonContentItem.qml</file>
+        <file>GeneralMenu.qml</file>
+        <file>LoginView.qml</file>
+        <file>GeneralSettingsView.qml</file>
+        <file>SecondaryViewHeader.qml</file>
+        <file>ColoredImage.qml</file>
+        <file>DialogPopup.qml</file>
+        <file>ButtonBackground.qml</file>
+        <file>ButtonContentItem.qml</file>
+        <file>ScreenBlur.qml</file>
+        <file>TileItem.qml</file>
+        <file>Separator.qml</file>
+        <file>SafetyIndicator.qml</file>
+        <file>ProgressBarM.qml</file>
+    </qresource>
+</RCC>

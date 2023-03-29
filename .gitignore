@@ -1,3 +1,8 @@
 target
 test/auth/certs
 *.lock
+**/result
+**/Makefile
+**/*.pro.user
+**/.qmake*
+**/*.o
