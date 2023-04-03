@@ -1,3 +1,6 @@
+vmd-api/server
+vmd-api/client
+openapitools.json
 target
 test/auth/certs
 *.lock
