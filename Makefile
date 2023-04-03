@@ -8,7 +8,7 @@ generate-sample-certs:
 generate-server-api:
 	openapi-generator-cli generate \
 		-g rust-server \
-		-i vmd-api/openapi/openapi.yaml \
+		-i vmd-api/openapi.yaml \
 		-o vmd-api/server
 
 test-curl-server:
