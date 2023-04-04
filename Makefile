@@ -1,21 +1,21 @@
 .ONESHELL:
 
-all: build
+OPENAPI=vmd-api/openapi.yaml
+CERTS=test/auth/certs
+RUST_API=vmd-api/rust
 
-generate-sample-certs:
-	make -C test/auth
+# Build
 
-generate-server-api:
+all: generate-api build
+
+generate-api: $(RUST_API)
+
+$(RUST_API):
 	openapi-generator-cli generate \
 		-g rust-server \
-		-i vmd-api/openapi.yaml \
-		-o vmd-api/server
-
-test-curl-server:
-	curl --cert test/auth/certs/sample-vmd-client-crt.pem \
-		--key test/auth/certs/sample-vmd-client-key.pem \
-		--cacert test/auth/certs/sample-ca-crt.pem \
-		http://localhost:8000/
+		-i $(OPENAPI) \
+		-o $(RUST_API) \
+		--additional-properties=packageName=vmd_api
 
 build:
 	cargo build --release
@@ -25,9 +25,24 @@ clean:
 
 fclean: clean
 	make fclean -C test/auth
-	rm -rf vmd-api/server
+	rm -rf $(RUST_API)
 	rm openapitools.json
 
 re: fclean all
 
-.PHONY: all create-test-certs build clean fclean re
+# Test
+
+test: generate-sample-certs test-curl-server
+
+generate-sample-certs: $(CERTS)
+
+$(CERTS):
+	make -C test/auth
+
+test-curl-server:
+	curl --cert test/auth/certs/sample-vmd-client-crt.pem \
+		--key test/auth/certs/sample-vmd-client-key.pem \
+		--cacert test/auth/certs/sample-ca-crt.pem \
+		http://localhost:8000/
+
+.PHONY: all generate-api build clean fclean re test generate-sample-certs test-curl-server

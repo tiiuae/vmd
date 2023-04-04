@@ -1,12 +1,38 @@
 [package]
-name = "vmd-server"
+name = "vmd_server"
 version = "0.1.0"
 edition = "2021"
 authors = ["Ville Ilvonen <ville.ilvonen@unikie.com>", "Julius Koskela <julius.koskela@unikie.com>"]
 
 [dependencies]
+vmd_api = { path = "../vmd-api/rust" }
 kvm-ioctls = { version = "0.12.0" }
 thiserror = "1.0.38"
 openapiv3 = "1.0.2"
 rocket = { version = "0.5.0-rc.2", features = ["tls", "mtls"] }
 serde_yaml = "0.9.19"
+
+async-trait = "0.1.67"
+futures = "0.3.27"
+hyper = "0.14.25"
+log = "0.4.17"
+openssl = "0.10.47"
+swagger = "6.2.1"
+tokio = { version = "1.26.0", features = ["full"] }
+env_logger = "0.10.0"
+serde_json = "1.0.94"
+tokio-openssl = "0.6.3"
+clap = "2.25"
+rustls = { version = "0.20.8", features = ["dangerous_configuration"] }
+tokio-rustls = "0.23.4"
+rustls-pemfile = "1.0.2"
+
+[dev-dependencies]
+clap = "2.25"
+env_logger = "0.7"
+tokio = { version = "1.14", features = ["full"] }
+native-tls = "0.2"
+
+[target.'cfg(not(any(target_os = "macos", target_os = "windows", target_os = "ios")))'.dev-dependencies]
+tokio-openssl = "0.6"
+openssl = "0.10"

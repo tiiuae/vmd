@@ -1,4 +1,5 @@
 mod kvm_util;
+mod server;
 
 #[macro_use] extern crate rocket;
 
