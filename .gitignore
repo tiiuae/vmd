@@ -1,4 +1,4 @@
-vmd-api/server
+vmd-api/rust
 openapitools.json
 target
 test/auth/certs
