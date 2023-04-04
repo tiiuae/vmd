@@ -20,6 +20,9 @@ $(RUST_API):
 build:
 	cargo build --release
 
+up: all
+	cargo run vmd_server --release
+
 clean:
 	cargo clean
 
