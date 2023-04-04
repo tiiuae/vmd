@@ -1,27 +1,19 @@
 mod kvm_util;
 mod server;
 
-#[macro_use] extern crate rocket;
+use clap::{App, Arg};
 
-use rocket::mtls::Certificate;
+#[tokio::main]
+async fn main() {
+    env_logger::init();
 
-#[get("/")]
-fn mutual(cert: Certificate<'_>) -> String {
-    format!("Hello! Here's what we know: [{}] {}", cert.serial(), cert.subject())
-}
+    let matches = App::new("server")
+        .arg(Arg::with_name("https")
+            .long("https")
+            .help("Whether to use HTTPS or not"))
+        .get_matches();
 
-#[get("/", rank = 2)]
-fn kvm_api_version() -> String {
-    match kvm_util::check_kvm_api_version() {
-        Ok(version) => format!("KVM API version: {}", version),
-        Err(e) => format!("Error: {:?}", e),
-    }
-}
+    let addr = "127.0.0.1:8080";
 
-#[launch]
-fn rocket() -> _ {
-    rocket::build().mount("/", routes![
-        kvm_api_version,
-        mutual
-    ])
+    server::create(addr, matches.is_present("https")).await;
 }
