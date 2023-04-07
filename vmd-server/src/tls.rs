@@ -75,7 +75,6 @@ impl VmdTlsAcceptor {
             .with_safe_default_cipher_suites()
             .with_safe_default_kx_groups()
             .with_safe_default_protocol_versions()?
-            // .with_no_client_auth()
             .with_client_cert_verifier(
                 Self::load_client_auth(ca)?
             )

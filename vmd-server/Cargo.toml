@@ -23,6 +23,8 @@ clap = { version = "4.2.1", features = ["derive"] }
 rustls = { version = "0.20.8", features = ["dangerous_configuration"] }
 tokio-rustls = "0.24.0"
 rustls-pemfile = "1.0.2"
+futures-util = "0.3.28"
+
 [target.'cfg(not(any(target_os = "macos", target_os = "windows", target_os = "ios")))'.dev-dependencies]
 tokio-openssl = "0.6"
 openssl = "0.10"
