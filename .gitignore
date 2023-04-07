@@ -1,3 +1,4 @@
+.vscode
 vmd-api/rust
 openapitools.json
 target

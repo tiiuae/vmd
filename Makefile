@@ -20,8 +20,6 @@ $(RUST_API):
 build:
 	cargo build --release
 
-up: all
-	cargo run -p vmd_server --release
 
 clean:
 	cargo clean
@@ -35,7 +33,15 @@ re: fclean all
 
 # Test
 
-test: generate-sample-certs test-curl-server
+test: generate-sample-certs
+
+test-server-up: all
+	cargo run -p vmd_server --release -- \
+		--addr localhost \
+		--port 8000 \
+		--ca test/auth/certs/sample-ca-crt.pem \
+		--crt test/auth/certs/sample-vmd-server-crt.pem \
+		--key test/auth/certs/sample-vmd-server-key.pem
 
 generate-sample-certs: $(CERTS)
 
@@ -46,6 +52,7 @@ test-curl-server:
 	curl --cert test/auth/certs/sample-vmd-client-crt.pem \
 		--key test/auth/certs/sample-vmd-client-key.pem \
 		--cacert test/auth/certs/sample-ca-crt.pem \
-		http://localhost:8000/
+		https://localhost:8000/ \
+		--verbose
 
 .PHONY: all generate-api build clean fclean re test generate-sample-certs test-curl-server

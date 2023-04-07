@@ -1,19 +1,25 @@
-mod kvm_util;
 mod server;
+mod util;
+mod tls;
+mod run;
+mod cli;
+mod kvm_util;
 
-use clap::{App, Arg};
+use clap::Parser;
+use std::process::exit;
 
 #[tokio::main]
 async fn main() {
-    env_logger::init();
-
-    let matches = App::new("server")
-        .arg(Arg::with_name("https")
-            .long("https")
-            .help("Whether to use HTTPS or not"))
-        .get_matches();
-
-    let addr = "127.0.0.1:8080";
-
-    server::create(addr, matches.is_present("https")).await;
+    let args = crate::cli::Args::parse();
+    crate::run::mtls_server(
+        &args.addr,
+        args.port,
+        &args.ca,
+        &args.crt,
+        &args.key,
+    ).await.unwrap_or_else(|e| {
+        eprintln!("VIRTUAL MACHINE DAEMON HAS ENCOUNTERED AN ERROR AND MUST EXIT");
+        eprintln!("Error: {}", e);
+        exit(1);
+    });
 }
