@@ -12,9 +12,9 @@ pub(crate) struct Args {
 	#[clap(long, required = true)]
 	pub port: u16,
 	#[clap(long, required = true)]
-	pub ca: PathBuf,
+	pub cacert: PathBuf,
 	#[clap(long, required = true)]
-	pub crt: PathBuf,
+	pub cert: PathBuf,
 	#[clap(long, required = true)]
 	pub key: PathBuf,
 	#[clap(long)]

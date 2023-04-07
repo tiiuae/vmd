@@ -37,9 +37,9 @@ test: generate-sample-certs
 test-server-up: all
 	cargo run -p vmd_server --release -- \
 		--addr localhost \
-		--port 8000 \
-		--ca test/auth/certs/sample-ca-crt.pem \
-		--crt test/auth/certs/sample-vmd-server-crt.pem \
+		--port 6666 \
+		--cacert test/auth/certs/sample-ca-crt.pem \
+		--cert test/auth/certs/sample-vmd-server-crt.pem \
 		--key test/auth/certs/sample-vmd-server-key.pem
 
 generate-sample-certs: $(CERTS)
@@ -48,10 +48,12 @@ $(CERTS):
 	make -C test/auth
 
 test-curl-server:
-	curl --cert test/auth/certs/sample-vmd-client-crt.pem \
+	curl http://localhost:6666/api/test/v1/vm/list \
+		--cert test/auth/certs/sample-vmd-client-crt.pem \
 		--key test/auth/certs/sample-vmd-client-key.pem \
 		--cacert test/auth/certs/sample-ca-crt.pem \
-		https://localhost:8000 \
-		--verbose
+		--http0.9 \
+		--verbose \
+		--output server-response.txt
 
 .PHONY: all generate-api build clean fclean re test generate-sample-certs test-curl-server

@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use log::info;
+// use log::info;
 use std::marker::PhantomData;
 use swagger::{Has, XSpanIdString};
 use swagger::ApiError;
@@ -31,7 +31,7 @@ impl<C> Api<C> for Server<C> where C: Has<XSpanIdString> + Send + Sync
         context: &C) -> Result<GetVmInfoByIdResponse, ApiError>
     {
         let context = context.clone();
-        info!("get_vm_info_by_id({:?}) - X-Span-ID: {:?}", id, context.get().0.clone());
+        println!("get_vm_info_by_id({:?}) - X-Span-ID: {:?}", id, context.get().0.clone());
         Err(ApiError("Generic failure".into()))
     }
 
@@ -41,7 +41,7 @@ impl<C> Api<C> for Server<C> where C: Has<XSpanIdString> + Send + Sync
         context: &C) -> Result<GetVmListResponse, ApiError>
     {
         let context = context.clone();
-        info!("get_vm_list() - X-Span-ID: {:?}", context.get().0.clone());
+        println!("get_vm_list() - X-Span-ID: {:?}", context.get().0.clone());
         Err(ApiError("Generic failure".into()))
     }
 
@@ -53,7 +53,7 @@ impl<C> Api<C> for Server<C> where C: Has<XSpanIdString> + Send + Sync
         context: &C) -> Result<VmActionResponse, ApiError>
     {
         let context = context.clone();
-        info!("vm_action({:?}, {:?}) - X-Span-ID: {:?}", action, id, context.get().0.clone());
+        println!("vm_action({:?}, {:?}) - X-Span-ID: {:?}", action, id, context.get().0.clone());
         Err(ApiError("Generic failure".into()))
     }
 }

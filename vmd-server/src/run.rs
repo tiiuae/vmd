@@ -17,6 +17,7 @@ use std::{
     path::Path,
     net::ToSocketAddrs,
 };
+use log::{error, info, trace};
 
 // === Internal modules =======================================================
 
@@ -36,6 +37,7 @@ pub(crate) async fn mtls_server(
     key: &Path,
 ) -> VmdResult<()> {
     let addr = (addr, port).to_socket_addrs()?.next().unwrap();
+    info!("Listening on {}", addr);
     let server = Server::new();
     let service = MakeService::new(server);
     let service = MakeAllowAllAuthenticator::new(service, "vm");
@@ -44,20 +46,22 @@ pub(crate) async fn mtls_server(
     let listener = TcpListener::bind(&addr).await?;
     loop {
         let (stream, peer_addr) = listener.accept().await?;
+        trace!("Incoming connection from {}", peer_addr);
         match acceptor.accept(stream).await {
             Ok(stream) => {
-                println!("Accepted connection from {}", peer_addr);
+                trace!("Accepted connection from {}", peer_addr);
                 let service = service.call(addr);
                 tokio::spawn(async move {
                     let service = service.await.expect("Error creating service");
                     Http::new()
+                        .http1_only(true)
                         .serve_connection(stream, service)
                         .await
                         .expect("Error serving connection");
                 });
             }
             Err(e) => {
-                panic!("Error accepting connection from {}: {}", peer_addr, e);
+                error!("Error accepting connection from {}: {}", peer_addr, e);
             }
         }
     }

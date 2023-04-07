@@ -6,9 +6,6 @@ use std::{
     path::Path,
     sync::Arc,
 };
-use rustls_pemfile::{
-    certs,
-};
 use tokio_rustls::{
     rustls::{
         ServerConfig,
@@ -20,8 +17,12 @@ use tokio_rustls::{
     TlsAcceptor,
     server::TlsStream,
 };
+use log::trace;
+use rustls_pemfile::certs;
 use tokio::net::TcpStream;
 use tokio_rustls::rustls::Error as TlsError;
+// use hyper::server::accept::Accept;
+// use hyper::server::conn::{AddrIncoming, AddrStream};
 
 // === Internal modules =======================================================
 
@@ -43,15 +44,15 @@ impl VmdTlsAcceptor {
         loop {
             match rustls_pemfile::read_one(&mut buf)? {
                 Some(rustls_pemfile::Item::RSAKey(key)) => {
-                    println!("Found RSA key");
+                    trace!("Found RSA key");
                     return Ok(vec![PrivateKey(key)])
                 }
                 Some(rustls_pemfile::Item::PKCS8Key(key)) => {
-                    println!("Found PKCS8 key");
+                    trace!("Found PKCS8 key");
                     return Ok(vec![PrivateKey(key)])
                 }
                 Some(rustls_pemfile::Item::ECKey(key)) => {
-                    println!("Found EC key");
+                    trace!("Found EC key");
                     return Ok(vec![PrivateKey(key)])
                 }
                 _ => {
@@ -62,20 +63,22 @@ impl VmdTlsAcceptor {
     }
 
     fn load_client_auth(path: &Path) -> VmdResult<Arc<ClientAuth>> {
-        let certs = Self::load_certs(path)?;
+        let mut buf = BufReader::new(File::open(path)?);
+        let certs = certs(&mut buf)?;
         let mut store = RootCertStore::empty();
-        for cert in certs {
-            store.add(&cert)?;
+        let (valid, invalid) = store.add_parsable_certificates(&certs);
+        if invalid > 0 {
+            return Err(VmdError::InvalidCertificate(format!("{} invalid certificates", invalid)))
         }
+        trace!("Loaded {} client certificates", valid);
         Ok(Arc::new(ClientAuth::new(store)))
     }
 
     fn make_config(ca: &Path, crt: &Path, key: &Path) -> VmdResult<Arc<ServerConfig>> {
-        let config = ServerConfig::builder()
+        let mut config = ServerConfig::builder()
             .with_safe_default_cipher_suites()
             .with_safe_default_kx_groups()
             .with_safe_default_protocol_versions()?
-            // .with_no_client_auth()
             .with_client_cert_verifier(
                 Self::load_client_auth(ca)?
             )
@@ -83,6 +86,7 @@ impl VmdTlsAcceptor {
                 Self::load_certs(crt)?,
                 Self::load_keys(key)?.remove(0)
             )?;
+        config.alpn_protocols = vec![b"h2".to_vec(), b"http/1.1".to_vec()];
         Ok(Arc::new(config))
     }
 
@@ -94,5 +98,17 @@ impl VmdTlsAcceptor {
         self.0.accept(stream).await.map_err(VmdError::from)
     }
 }
+
+// impl Accept for VmdTlsAcceptor {
+//     type Conn = TlsStream<TcpStream>;
+//     type Error = VmdError;
+
+//     fn poll_accept(
+//         mut self: std::pin::Pin<&mut Self>,
+//         cx: &mut std::task::Context<'_>,
+//     ) -> std::task::Poll<Option<std::result::Result<Self::Conn, Self::Error>>> {
+//         todo!()
+//     }
+// }
 
 // ===  EOF  ==================================================================

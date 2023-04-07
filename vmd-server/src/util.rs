@@ -10,6 +10,8 @@ pub enum VmdError {
     ApiError(swagger::ApiError),
     #[error("KVM error: {0}")]
     KvmError(crate::kvm_util::KvmError),
+    #[error("Invalid certificate: {0}")]
+    InvalidCertificate(String),
 }
 
 macro_rules ! impl_from {
