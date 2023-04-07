@@ -20,7 +20,6 @@ $(RUST_API):
 build:
 	cargo build --release
 
-
 clean:
 	cargo clean
 
@@ -52,7 +51,7 @@ test-curl-server:
 	curl --cert test/auth/certs/sample-vmd-client-crt.pem \
 		--key test/auth/certs/sample-vmd-client-key.pem \
 		--cacert test/auth/certs/sample-ca-crt.pem \
-		https://localhost:8000/ \
+		https://localhost:8000 \
 		--verbose
 
 .PHONY: all generate-api build clean fclean re test generate-sample-certs test-curl-server

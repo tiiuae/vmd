@@ -21,7 +21,8 @@ ORGANIZATION=VMD
 ORGANIZATION_UNIT=VMD
 
 CA_COMMON_NAME=vmd-ca
-VMD_SERVER_COMMON_NAME=localhost # TLS requires URL's to match so we use localhost
+# TLS requires URL's to match so we use localhost
+VMD_SERVER_COMMON_NAME=localhost
 VMD_CLIENT_COMMON_NAME=vmd-client
 
 PASSWORD=1234
