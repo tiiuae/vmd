@@ -3,12 +3,14 @@ use async_trait::async_trait;
 use std::marker::PhantomData;
 use swagger::{Has, XSpanIdString};
 use swagger::ApiError;
+use log::trace;
 use vmd_api::{
     Api,
     GetVmInfoByIdResponse,
     GetVmListResponse,
     VmActionResponse,
 };
+use serde_json::Value;
 
 #[derive(Copy, Clone)]
 pub struct Server<C> {
@@ -31,7 +33,7 @@ impl<C> Api<C> for Server<C> where C: Has<XSpanIdString> + Send + Sync
         context: &C) -> Result<GetVmInfoByIdResponse, ApiError>
     {
         let context = context.clone();
-        println!("get_vm_info_by_id({:?}) - X-Span-ID: {:?}", id, context.get().0.clone());
+        trace!("get_vm_info_by_id({:?}) - X-Span-ID: {:?}", id, context.get().0.clone());
         Err(ApiError("Generic failure".into()))
     }
 
@@ -41,8 +43,11 @@ impl<C> Api<C> for Server<C> where C: Has<XSpanIdString> + Send + Sync
         context: &C) -> Result<GetVmListResponse, ApiError>
     {
         let context = context.clone();
-        println!("get_vm_list() - X-Span-ID: {:?}", context.get().0.clone());
-        Err(ApiError("Generic failure".into()))
+        trace!("get_vm_list() - X-Span-ID: {:?}", context.get().0.clone());
+        let ids = [1, 2, 3];
+        let json = serde_json::to_string(&ids).unwrap();
+        let value = serde_json::from_str(&json).unwrap();
+        Ok(GetVmListResponse::ListOfIDsForAllVirtualMachines(value))
     }
 
     /// Request to perform a control action on the virtual machine by its ID
@@ -53,7 +58,7 @@ impl<C> Api<C> for Server<C> where C: Has<XSpanIdString> + Send + Sync
         context: &C) -> Result<VmActionResponse, ApiError>
     {
         let context = context.clone();
-        println!("vm_action({:?}, {:?}) - X-Span-ID: {:?}", action, id, context.get().0.clone());
+        trace!("vm_action({:?}, {:?}) - X-Span-ID: {:?}", action, id, context.get().0.clone());
         Err(ApiError("Generic failure".into()))
     }
 }

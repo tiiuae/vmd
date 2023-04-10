@@ -8,16 +8,24 @@ mod kvm_util;
 use clap::Parser;
 use std::process::exit;
 use log::error;
-
-const INFO_HEADER: &str = "
-=== Virtual Machine Daemon Server ===
-";
+use vmd_api::{
+    BASE_PATH,
+    API_VERSION,
+};
 
 #[tokio::main]
 async fn main() {
     let args = crate::cli::Args::parse();
     env_logger::init();
-    println!("{}", INFO_HEADER);
+    println!("=== Virtual Machine Daemon Server ===");
+    println!("version: {}", API_VERSION);
+    println!("hostname: {}", args.addr);
+    println!("port: {}", args.port);
+    println!("base: {}", BASE_PATH);
+    println!("ca: {}", args.cacert.display());
+    println!("cert: {}", args.cert.display());
+    println!("key: {}", args.key.display());
+    println!("");
     crate::run::mtls_server(
         &args.addr,
         args.port,

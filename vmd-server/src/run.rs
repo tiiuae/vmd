@@ -1,8 +1,10 @@
 // === External crates ========================================================
 
+#![allow(unused_imports)]
 use tokio::net::TcpListener;
 use hyper::{
-    server::conn::Http,
+    Server as HyperServer,
+    server::conn::{AddrIncoming, AddrStream},
     service::Service,
 };
 use swagger::{
@@ -28,7 +30,6 @@ use crate::{
 };
 
 // === Implementations ========================================================
-
 pub(crate) async fn mtls_server(
     addr: &str,
     port: u16,
@@ -36,35 +37,17 @@ pub(crate) async fn mtls_server(
     crt: &Path,
     key: &Path,
 ) -> VmdResult<()> {
-    let addr = (addr, port).to_socket_addrs()?.next().unwrap();
+    let addr = format!("{}:{}", addr, port);
+    let addr = addr.to_socket_addrs()?.next().unwrap();
     info!("Listening on {}", addr);
-    let server = Server::new();
-    let service = MakeService::new(server);
-    let service = MakeAllowAllAuthenticator::new(service, "vm");
-    let mut service = MakeAddContext::<_, EmptyContext>::new(service);
-    let acceptor = VmdTlsAcceptor::new(ca, crt, key)?;
-    let listener = TcpListener::bind(&addr).await?;
-    loop {
-        let (stream, peer_addr) = listener.accept().await?;
-        trace!("Incoming connection from {}", peer_addr);
-        match acceptor.accept(stream).await {
-            Ok(stream) => {
-                trace!("Accepted connection from {}", peer_addr);
-                let service = service.call(addr);
-                tokio::spawn(async move {
-                    let service = service.await.expect("Error creating service");
-                    Http::new()
-                        .http1_only(true)
-                        .serve_connection(stream, service)
-                        .await
-                        .expect("Error serving connection");
-                });
-            }
-            Err(e) => {
-                error!("Error accepting connection from {}: {}", peer_addr, e);
-            }
-        }
-    }
+    let api = Server::new();
+    let service = MakeService::new(api);
+    // let service = MakeAllowAllAuthenticator::new(service, "vm");
+    let service = MakeAddContext::<_, EmptyContext>::new(service);
+    let incoming = AddrIncoming::bind(&addr)?;
+    let acceptor = VmdTlsAcceptor::new(incoming, ca, crt, key)?;
+    let server = HyperServer::builder(acceptor).serve(service);
+    server.await.map_err(|e| e.into())
 }
 
 // ===  EOF  ==================================================================

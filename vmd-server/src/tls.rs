@@ -1,10 +1,13 @@
 // === External crates ========================================================
-
+use core::task::{Context, Poll};
 use std::{
     fs::File,
     io::BufReader,
     path::Path,
     sync::Arc,
+    pin::Pin,
+    future::Future,
+    io::Result as IoResult,
 };
 use tokio_rustls::{
     rustls::{
@@ -12,17 +15,19 @@ use tokio_rustls::{
         RootCertStore,
         Certificate,
         PrivateKey,
+        Error as TlsError,
         server::AllowAnyAuthenticatedClient as ClientAuth,
+        version::{TLS13, TLS12},
     },
-    TlsAcceptor,
     server::TlsStream,
 };
-use log::trace;
+use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
+use hyper::server::conn::{AddrIncoming, AddrStream};
+use hyper::server::accept::Accept;
+use log::{error, trace};
 use rustls_pemfile::certs;
 use tokio::net::TcpStream;
-use tokio_rustls::rustls::Error as TlsError;
-// use hyper::server::accept::Accept;
-// use hyper::server::conn::{AddrIncoming, AddrStream};
+use futures_util::ready;
 
 // === Internal modules =======================================================
 
@@ -30,7 +35,87 @@ use crate::util::{VmdError, VmdResult};
 
 // === Implementations ========================================================
 
-pub(crate) struct VmdTlsAcceptor(TlsAcceptor);
+enum State {
+    Handshaking(tokio_rustls::Accept<AddrStream>),
+    Streaming(tokio_rustls::server::TlsStream<AddrStream>),
+}
+
+// tokio_rustls::server::TlsStream doesn't expose constructor methods,
+// so we have to TlsAcceptor::accept and handshake to have access to it
+// TlsStream implements AsyncRead/AsyncWrite handshaking tokio_rustls::Accept first
+pub struct VmdTlsStream {
+    state: State,
+}
+
+impl VmdTlsStream {
+    fn new(stream: AddrStream, config: Arc<ServerConfig>) -> VmdTlsStream {
+        let accept = tokio_rustls::TlsAcceptor::from(config).accept(stream);
+        VmdTlsStream {
+            state: State::Handshaking(accept),
+        }
+    }
+}
+
+impl AsyncRead for VmdTlsStream {
+    fn poll_read(
+        self: Pin<&mut Self>,
+        cx: &mut Context,
+        buf: &mut ReadBuf,
+    ) -> Poll<IoResult<()>> {
+        let pin = self.get_mut();
+        match pin.state {
+            State::Handshaking(ref mut accept) => match ready!(Pin::new(accept).poll(cx)) {
+                Ok(mut stream) => {
+                    let result = Pin::new(&mut stream).poll_read(cx, buf);
+                    pin.state = State::Streaming(stream);
+                    result
+                }
+                Err(err) => Poll::Ready(Err(err)),
+            },
+            State::Streaming(ref mut stream) => Pin::new(stream).poll_read(cx, buf),
+        }
+    }
+}
+
+impl AsyncWrite for VmdTlsStream {
+    fn poll_write(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &[u8],
+    ) -> Poll<IoResult<usize>> {
+        let pin = self.get_mut();
+        match pin.state {
+            State::Handshaking(ref mut accept) => match ready!(Pin::new(accept).poll(cx)) {
+                Ok(mut stream) => {
+                    let result = Pin::new(&mut stream).poll_write(cx, buf);
+                    pin.state = State::Streaming(stream);
+                    result
+                }
+                Err(err) => Poll::Ready(Err(err)),
+            },
+            State::Streaming(ref mut stream) => Pin::new(stream).poll_write(cx, buf),
+        }
+    }
+
+    fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<IoResult<()>> {
+        match self.state {
+            State::Handshaking(_) => Poll::Ready(Ok(())),
+            State::Streaming(ref mut stream) => Pin::new(stream).poll_flush(cx),
+        }
+    }
+
+    fn poll_shutdown(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<IoResult<()>> {
+        match self.state {
+            State::Handshaking(_) => Poll::Ready(Ok(())),
+            State::Streaming(ref mut stream) => Pin::new(stream).poll_shutdown(cx),
+        }
+    }
+}
+
+pub(crate) struct VmdTlsAcceptor {
+    config: Arc<ServerConfig>,
+    incoming: AddrIncoming,
+}
 
 impl VmdTlsAcceptor {
     fn load_certs(path: &Path) -> VmdResult<Vec<Certificate>> {
@@ -87,28 +172,42 @@ impl VmdTlsAcceptor {
                 Self::load_keys(key)?.remove(0)
             )?;
         config.alpn_protocols = vec![b"h2".to_vec(), b"http/1.1".to_vec()];
+        config.key_log = Arc::new(tokio_rustls::rustls::KeyLogFile::new());
+        config.session_storage = tokio_rustls::rustls::server::ServerSessionMemoryCache::new(256);
+        config.ticketer = tokio_rustls::rustls::Ticketer::new().unwrap();
         Ok(Arc::new(config))
     }
 
-    pub fn new(ca: &Path, crt: &Path, key: &Path) -> VmdResult<Self> {
-        Ok(Self(TlsAcceptor::from(Self::make_config(ca, crt, key)?)))
-    }
-
-    pub async fn accept(&self, stream: TcpStream) -> VmdResult<TlsStream<TcpStream>> {
-        self.0.accept(stream).await.map_err(VmdError::from)
+    pub fn new(incoming: AddrIncoming, ca: &Path, crt: &Path, key: &Path) -> VmdResult<Self> {
+        let config = Self::make_config(ca, crt, key)?;
+        Ok(Self { config, incoming })
     }
 }
 
-// impl Accept for VmdTlsAcceptor {
-//     type Conn = TlsStream<TcpStream>;
-//     type Error = VmdError;
+impl Accept for VmdTlsAcceptor {
+    type Conn = VmdTlsStream;
+    type Error = VmdError;
 
-//     fn poll_accept(
-//         mut self: std::pin::Pin<&mut Self>,
-//         cx: &mut std::task::Context<'_>,
-//     ) -> std::task::Poll<Option<std::result::Result<Self::Conn, Self::Error>>> {
-//         todo!()
-//     }
-// }
+    fn poll_accept(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<Option<Result<Self::Conn, Self::Error>>> {
+        let pin = self.get_mut();
+        match ready!(Pin::new(&mut pin.incoming).poll_accept(cx)) {
+            Some(Ok(sock)) => {
+                trace!("Ready to accept TLS connection from {:#?}", sock);
+                Poll::Ready(Some(Ok(VmdTlsStream::new(sock, pin.config.clone()))))
+            }
+            Some(Err(err)) => {
+                error!("TLS accept error: {}", err);
+                Poll::Ready(Some(Err(err.into())))
+            }
+            None => {
+                trace!("Poll accept returned None");
+                Poll::Ready(None)
+            }
+        }
+    }
+}
 
 // ===  EOF  ==================================================================

@@ -1,6 +1,8 @@
 .vscode
+server-response.txt
 vmd-api/rust
 openapitools.json
 target
 test/auth/certs
 *.lock
+*.pem
