@@ -8,8 +8,6 @@ authors = ["Ville Ilvonen <ville.ilvonen@unikie.com>", "Julius Koskela <julius.k
 vmd_rust_server_api = { path = "../vmd-api/rust-server" }
 kvm-ioctls = { version = "0.12.0" }
 thiserror = "1.0.38"
-serde_yaml = "0.9.19"
-
 async-trait = "0.1.67"
 futures = "0.3.27"
 hyper = { version = "0.14.25", features = ["http1", "full"] }
@@ -25,8 +23,5 @@ tokio-rustls = "0.24.0"
 rustls-pemfile = "1.0.2"
 futures-util = "0.3.28"
 mio = "0.8.6"
-docopt = "1.1.1"
 serde_derive = "1.0.159"
 serde = { version = "1.0.159", features = ["derive"] }
-webpki-roots = "0.23.0"
-reqwest = { version = "0.11.16", features = ["rustls-tls"] }

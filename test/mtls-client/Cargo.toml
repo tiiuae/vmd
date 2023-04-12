@@ -8,30 +8,17 @@ edition = "2021"
 [dependencies]
 vmd_rust_client_api = { path = "../../vmd-api/rust-client" }
 thiserror = "1.0.38"
-serde_yaml = "0.9.19"
-
-async-trait = "0.1.67"
-futures = "0.3.27"
 hyper = { version = "0.14.25", features = ["http1", "full"] }
 log = "0.4.17"
-swagger = "6.2.1"
 tokio = { version = "1.26.0", features = ["full"] }
-env_logger = "0.10.0"
 serde_json = "1.0.94"
-tokio-openssl = "0.6.3"
 clap = { version = "4.2.1", features = ["derive"] }
 rustls = { version = "0.20.8", features = ["dangerous_configuration"] }
-tokio-rustls = "0.24.0"
 rustls-pemfile = "1.0.2"
 futures-util = "0.3.28"
 mio = "0.8.6"
-docopt = "1.1.1"
 serde_derive = "1.0.159"
 serde = { version = "1.0.159", features = ["derive"] }
-webpki-roots = "0.23.0"
 reqwest = { version = "0.11.16", features = ["rustls-tls"] }
-hyper-rustls = "0.24.0"
-rustls-connector = "0.16.1"
 tower-service = "0.3.2"
 http = "0.2.9"
-toml = "0.7.3"
