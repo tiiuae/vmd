@@ -1,64 +1,55 @@
-use async_trait::async_trait;
-// use log::info;
-use std::marker::PhantomData;
-use swagger::{Has, XSpanIdString};
-use swagger::ApiError;
-use log::trace;
-use vmd_api::{
-    Api,
-    GetVmInfoByIdResponse,
-    GetVmListResponse,
-    VmActionResponse,
+// === External crates ========================================================
+
+#![allow(unused_imports)]
+use tokio::net::TcpListener;
+use hyper::{
+    Server as HyperServer,
+    server::conn::{AddrIncoming, AddrStream},
+    service::Service,
 };
-use serde_json::Value;
+use swagger::{
+    auth::MakeAllowAllAuthenticator,
+    EmptyContext,
+};
+use vmd_api::{
+    server::MakeService,
+    server::context::MakeAddContext,
+};
+use std::{
+    path::Path,
+    net::ToSocketAddrs,
+};
+use log::{error, info, trace};
 
-#[derive(Copy, Clone)]
-pub struct Server<C> {
-    marker: PhantomData<C>,
-}
+// === Internal modules =======================================================
 
-impl<C> Server<C> {
-    pub fn new() -> Self {
-        Server{marker: PhantomData}
-    }
-}
+use crate::{
+    util::VmdResult,
+    api::ApiImpl,
+    tls::VmdTlsAcceptor,
+    cli::Args,
+};
 
-#[async_trait]
-impl<C> Api<C> for Server<C> where C: Has<XSpanIdString> + Send + Sync
+// === Implementations ========================================================
+
+pub(crate) async fn run(args: &Args) -> VmdResult<()>
 {
-    /// Gets virtual machine info by ID
-    async fn get_vm_info_by_id(
-        &self,
-        id: serde_json::Value,
-        context: &C) -> Result<GetVmInfoByIdResponse, ApiError>
-    {
-        let context = context.clone();
-        trace!("get_vm_info_by_id({:?}) - X-Span-ID: {:?}", id, context.get().0.clone());
-        Err(ApiError("Generic failure".into()))
-    }
-
-    /// Get list IDs for all virtual machines
-    async fn get_vm_list(
-        &self,
-        context: &C) -> Result<GetVmListResponse, ApiError>
-    {
-        let context = context.clone();
-        trace!("get_vm_list() - X-Span-ID: {:?}", context.get().0.clone());
-        let ids = [1, 2, 3];
-        let json = serde_json::to_string(&ids).unwrap();
-        let value = serde_json::from_str(&json).unwrap();
-        Ok(GetVmListResponse::ListOfIDsForAllVirtualMachines(value))
-    }
-
-    /// Request to perform a control action on the virtual machine by its ID
-    async fn vm_action(
-        &self,
-        action: serde_json::Value,
-        id: serde_json::Value,
-        context: &C) -> Result<VmActionResponse, ApiError>
-    {
-        let context = context.clone();
-        trace!("vm_action({:?}, {:?}) - X-Span-ID: {:?}", action, id, context.get().0.clone());
-        Err(ApiError("Generic failure".into()))
-    }
+    println!("⚡    Virtual Machine Daemon Server   ⚡\n");
+    println!("{}", args);
+    let addr = format!("{}:{}", args.addr, args.port);
+    let addr = addr.to_socket_addrs()?.next().unwrap();
+    info!("Listening on {}", addr);
+    let service = MakeService::new(ApiImpl::new());
+    let service = MakeAddContext::<_, EmptyContext>::new(service);
+    let incoming = AddrIncoming::bind(&addr)?;
+    let acceptor = VmdTlsAcceptor::new(
+        incoming,
+        &args.cacert.as_path(),
+        &args.cert.as_path(),
+        &args.key.as_path(),
+    )?;
+    let server = HyperServer::builder(acceptor).serve(service);
+    server.await.map_err(|e| e.into())
 }
+
+// ===  EOF  ==================================================================

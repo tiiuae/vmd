@@ -3,6 +3,7 @@ server-response.txt
 vmd-api/rust
 openapitools.json
 target
+trash
 test/auth/certs
 *.lock
 *.pem

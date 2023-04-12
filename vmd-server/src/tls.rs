@@ -9,24 +9,19 @@ use std::{
     future::Future,
     io::Result as IoResult,
 };
-use tokio_rustls::{
-    rustls::{
-        ServerConfig,
-        RootCertStore,
-        Certificate,
-        PrivateKey,
-        Error as TlsError,
-        server::AllowAnyAuthenticatedClient as ClientAuth,
-        version::{TLS13, TLS12},
-    },
-    server::TlsStream,
+use tokio_rustls::rustls::{
+    ServerConfig,
+    RootCertStore,
+    Certificate,
+    PrivateKey,
+    Error as TlsError,
+    server::AllowAnyAuthenticatedClient as ClientAuth,
 };
 use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
 use hyper::server::conn::{AddrIncoming, AddrStream};
 use hyper::server::accept::Accept;
 use log::{error, trace};
 use rustls_pemfile::certs;
-use tokio::net::TcpStream;
 use futures_util::ready;
 
 // === Internal modules =======================================================
