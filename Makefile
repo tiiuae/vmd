@@ -1,7 +1,7 @@
 .ONESHELL:
 
 OPENAPI=vmd-api/openapi.yaml
-RUST_API=vmd-api/rust-server
+RUST_SERVER_API=vmd-api/rust-server
 RUST_CLIENT_API=vmd-api/rust-client
 
 CERTS=test/auth/certs
@@ -12,25 +12,19 @@ SERVER_CERT=$(CERTS)/sample-vmd-server-crt.pem
 SERVER_KEY=$(CERTS)/sample-vmd-server-key.pem
 CA_CERT=$(CERTS)/sample-ca-crt.pem
 
-# CLIENT_CERT=vmd-client.pem
-# CLIENT_KEY=vmd-client-key.pem
-# SERVER_CERT=localhost+2.pem
-# SERVER_KEY=localhost+2-key.pem
-# CA_CERT=~/.local/share/mkcert/rootCA.pem
-
 PORT=8080
 
 # Build
 
-all: generate-api generate-client-api build
+all: generate-server-api generate-client-api build
 
-generate-api: $(RUST_API)
+generate-server-api: $(RUST_SERVER_API)
 
-$(RUST_API):
+$(RUST_SERVER_API):
 	openapi-generator-cli generate \
 		-g rust-server \
 		-i $(OPENAPI) \
-		-o $(RUST_API) \
+		-o $(RUST_SERVER_API) \
 		--additional-properties=packageName=vmd_rust_server_api
 
 generate-client-api: $(RUST_CLIENT_API)
@@ -51,7 +45,7 @@ clean:
 
 fclean: clean
 	make fclean -C test/auth
-	rm -rf $(RUST_API)
+	rm -rf $(RUST_SERVER_API)
 	rm -rf $(RUST_CLIENT_API)
 	rm openapitools.json
 
@@ -59,7 +53,7 @@ re: fclean all
 
 # Test
 
-test: generate-sample-certs
+test: all generate-sample-certs test-server-up
 
 test-server-up: all
 	cargo run -p vmd_server --release -- \
