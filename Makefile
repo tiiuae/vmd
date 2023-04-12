@@ -57,7 +57,7 @@ test: all generate-sample-certs test-server-up
 
 test-server-up: all
 	cargo run -p vmd_server --release -- \
-		--addr localhost \
+		--hostname localhost \
 		--port $(PORT) \
 		--cacert $(CA_CERT) \
 		--cert $(SERVER_CERT) \
