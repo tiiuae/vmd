@@ -1,6 +1,7 @@
 .vscode
 server-response.txt
 vmd-api/rust
+vmd-api/rust-client
 openapitools.json
 target
 trash
