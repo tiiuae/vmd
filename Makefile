@@ -81,7 +81,7 @@ test-client:
 		--key $(CLIENT_KEY) \
 		--hostname localhost
 
-test-curl-server:
+test-curl-client:
 	curl --tlsv1.3 \
 		--tls-max 1.3 \
 		--cert $(CLIENT_CERT) \
@@ -91,14 +91,14 @@ test-curl-server:
 		--verbose \
 		https://localhost:$(PORT)/api/v1/vm/list/
 
-test-wget-server:
+test-wget-client:
 	wget \
 		--ca-cert=$(CA_CERT) \
 		--certificate=$(CLIENT_CERT) \
      	--private-key=$(CLIENT_KEY) \
 		https://localhost:$(PORT)/api/v1/vm/list
 
-test-openssl-server:
+test-openssl-client:
 	openssl s_client \
 		-CAfile $(CA_CERT) \
 		-cert $(CLIENT_CERT) \
