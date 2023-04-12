@@ -28,7 +28,7 @@ pub(crate) async fn run(args: &Args) -> VmdResult<()>
 {
     println!("⚡    Virtual Machine Daemon Server   ⚡\n");
     println!("{}", args);
-    let addr = format!("{}:{}", args.addr, args.port);
+    let addr = format!("{}:{}", args.hostname, args.port);
     let addr = addr.to_socket_addrs()?.next().unwrap();
     let service = MakeService::new(ApiImpl::new());
     let service = MakeAddContext::<_, EmptyContext>::new(service);

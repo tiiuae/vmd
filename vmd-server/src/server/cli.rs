@@ -1,8 +1,12 @@
+// === Cli ====================================================================
+//
+// Command line interface for the virtual machine daemon server.
+//
 // === External crates ========================================================
 
 use std::{
     path::PathBuf,
-    fmt::{self, Display, Formatter},
+    fmt::{Display, Formatter, Result},
 };
 use clap::Parser;
 
@@ -15,35 +19,48 @@ use vmd_rust_server_api::{
 
 // === Implementations ========================================================
 
+/// A virtual machine daemon server
 #[derive(Parser, Debug)]
 pub(crate) struct Args {
-	#[clap(long, required = true)]
-	pub addr: String,
-	#[clap(long, required = true)]
+
+    /// Server hostname
+	#[clap(short, long, required = true)]
+	pub hostname: String,
+
+    /// Port to listen on
+	#[clap(short, long, required = true)]
 	pub port: u16,
-	#[clap(long, required = true)]
+
+    /// Path to certificate authority pem file (.pem)
+	#[clap(short = 'a', long, required = true)]
 	pub cacert: PathBuf,
-	#[clap(long, required = true)]
+
+    /// Path to server certificate pem file (.pem)
+	#[clap(short, long, required = true)]
 	pub cert: PathBuf,
-	#[clap(long, required = true)]
+
+    /// Path to server private key pem file (.pem)
+	#[clap(short, long, required = true)]
 	pub key: PathBuf,
+
+    /// Unimplemented!
 	#[clap(long)]
-	pub oscp: Option<PathBuf>,
+	pub ocsp: Option<PathBuf>,
 }
 
 impl Display for Args {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        let url = format!("https://{}:{}", self.addr, self.port);
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        let url = format!("https://{}:{}", self.hostname, self.port);
         write!(f, "📌 api-version:           {}\n", API_VERSION)?;
         write!(f, "📡 address:               {}\n", url)?;
         write!(f, "🚩 base-path:             {}\n", BASE_PATH)?;
         write!(f, "🔑 private-key:           {}\n", self.key.display())?;
-        write!(f, "🔐 certificate:            {}\n", self.cert.display())?;
+        write!(f, "🔐 certificate:           {}\n", self.cert.display())?;
         write!(f, "🔐 certificate-authority: {}\n", self.cacert.display())?;
-        if let Some(oscp) = &self.oscp {
-            write!(f, "🔐 oscp:                  {}\n", oscp.display())?;
+        if let Some(ocsp) = &self.ocsp {
+            write!(f, "🔐 ocsp:                  {}\n", ocsp.display())?;
         } else {
-            write!(f, "🚫 oscp:                  None\n")?;
+            write!(f, "🔐 ocsp:                  🚫\n")?;
         }
         write!(f, "")?;
         Ok(())

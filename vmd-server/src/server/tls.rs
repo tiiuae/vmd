@@ -1,3 +1,9 @@
+// === Tls ====================================================================
+//
+// This module implements a `VmdTlsAcceptor` for the VMD server. It is used to
+// accept TLS connections and to perform the TLS handshake. Configuration of
+// the TLS server can be found in the function `VmdTlsAcceptor::make_config`.
+//
 // === External crates ========================================================
 
 use core::task::{Context, Poll};
@@ -10,17 +16,33 @@ use std::{
     future::Future,
     io::Result as IoResult,
 };
-use tokio_rustls::rustls::{
-    ServerConfig,
-    RootCertStore,
-    Certificate,
-    PrivateKey,
-    Error as TlsError,
-    server::AllowAnyAuthenticatedClient as ClientAuth,
+use tokio_rustls::{
+    Accept as TlsAccept,
+    TlsAcceptor,
+    server::TlsStream,
+    rustls::{
+        ServerConfig,
+        RootCertStore,
+        Certificate,
+        PrivateKey,
+        KeyLogFile,
+        Ticketer,
+        Error as TlsError,
+        server::{
+            AllowAnyAuthenticatedClient,
+            ServerSessionMemoryCache,
+        }
+    },
 };
-use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
-use hyper::server::conn::{AddrIncoming, AddrStream};
-use hyper::server::accept::Accept;
+use tokio::io::{
+    AsyncRead,
+    AsyncWrite,
+    ReadBuf,
+};
+use hyper::server::{
+    conn::{AddrIncoming, AddrStream},
+    accept::Accept,
+};
 use log::{error, trace};
 use rustls_pemfile::certs;
 use futures_util::ready;
@@ -32,8 +54,8 @@ use super::util::{VmdError, VmdResult};
 // === Implementations ========================================================
 
 enum State {
-    Handshaking(tokio_rustls::Accept<AddrStream>),
-    Streaming(tokio_rustls::server::TlsStream<AddrStream>),
+    Handshaking(TlsAccept<AddrStream>),
+    Streaming(TlsStream<AddrStream>),
 }
 
 pub struct VmdTlsStream {
@@ -42,7 +64,7 @@ pub struct VmdTlsStream {
 
 impl VmdTlsStream {
     fn new(stream: AddrStream, config: Arc<ServerConfig>) -> VmdTlsStream {
-        let accept = tokio_rustls::TlsAcceptor::from(config).accept(stream);
+        let accept = TlsAcceptor::from(config).accept(stream);
         VmdTlsStream {
             state: State::Handshaking(accept),
         }
@@ -140,23 +162,21 @@ impl VmdTlsAcceptor {
         }
     }
 
-    fn load_client_auth(path: &Path) -> VmdResult<Arc<ClientAuth>> {
+    fn load_client_auth(path: &Path) -> VmdResult<Arc<AllowAnyAuthenticatedClient>> {
         let mut buf = BufReader::new(File::open(path)?);
         let certs = certs(&mut buf)?;
         let mut store = RootCertStore::empty();
-        let (valid, invalid) = store.add_parsable_certificates(&certs);
+        let (_, invalid) = store.add_parsable_certificates(&certs);
         if invalid > 0 {
             return Err(VmdError::InvalidCertificate(format!("{} invalid certificates", invalid)))
         }
-        trace!("Loaded {} client certificates", valid);
-        Ok(Arc::new(ClientAuth::new(store)))
+        trace!("Certificate authority found");
+        Ok(Arc::new(AllowAnyAuthenticatedClient::new(store)))
     }
 
     fn make_config(ca: &Path, crt: &Path, key: &Path) -> VmdResult<Arc<ServerConfig>> {
         let mut config = ServerConfig::builder()
-            .with_safe_default_cipher_suites()
-            .with_safe_default_kx_groups()
-            .with_safe_default_protocol_versions()?
+            .with_safe_defaults()
             .with_client_cert_verifier(
                 Self::load_client_auth(ca)?
             )
@@ -165,9 +185,10 @@ impl VmdTlsAcceptor {
                 Self::load_keys(key)?.remove(0)
             )?;
         config.alpn_protocols = vec![b"h2".to_vec(), b"http/1.1".to_vec()];
-        config.key_log = Arc::new(tokio_rustls::rustls::KeyLogFile::new());
-        config.session_storage = tokio_rustls::rustls::server::ServerSessionMemoryCache::new(256);
-        config.ticketer = tokio_rustls::rustls::Ticketer::new().unwrap();
+        config.key_log = Arc::new(KeyLogFile::new());
+        config.session_storage = ServerSessionMemoryCache::new(256);
+        config.ticketer = Ticketer::new().unwrap();
+        trace!("{:#?}", config);
         Ok(Arc::new(config))
     }
 

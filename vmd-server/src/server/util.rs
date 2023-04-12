@@ -1,3 +1,7 @@
+// === Util ===================================================================
+//
+// Error and Result types used by the VMD.
+//
 // === Implementations ========================================================
 
 pub type VmdResult<T> = std::result::Result<T, VmdError>;
