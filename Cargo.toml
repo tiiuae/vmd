@@ -2,7 +2,7 @@
 
 members = [
     "vmd-server",
-	"vmd-api/rust",
+	"vmd-api/rust-server",
     "vmd-api/rust-client",
     "test/mtls-client",
 ]

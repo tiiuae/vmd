@@ -1,4 +1,5 @@
 // === External crates ========================================================
+
 use core::task::{Context, Poll};
 use std::{
     fs::File,
@@ -26,7 +27,7 @@ use futures_util::ready;
 
 // === Internal modules =======================================================
 
-use crate::util::{VmdError, VmdResult};
+use super::util::{VmdError, VmdResult};
 
 // === Implementations ========================================================
 
@@ -35,9 +36,6 @@ enum State {
     Streaming(tokio_rustls::server::TlsStream<AddrStream>),
 }
 
-// tokio_rustls::server::TlsStream doesn't expose constructor methods,
-// so we have to TlsAcceptor::accept and handshake to have access to it
-// TlsStream implements AsyncRead/AsyncWrite handshaking tokio_rustls::Accept first
 pub struct VmdTlsStream {
     state: State,
 }

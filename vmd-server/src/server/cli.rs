@@ -4,13 +4,15 @@ use std::{
     path::PathBuf,
     fmt::{self, Display, Formatter},
 };
-
 use clap::Parser;
 
-use vmd_api::{
+// === Internal modules =======================================================
+
+use vmd_rust_server_api::{
     BASE_PATH,
     API_VERSION,
 };
+
 // === Implementations ========================================================
 
 #[derive(Parser, Debug)]
@@ -36,7 +38,7 @@ impl Display for Args {
         write!(f, "📡 address:               {}\n", url)?;
         write!(f, "🚩 base-path:             {}\n", BASE_PATH)?;
         write!(f, "🔑 private-key:           {}\n", self.key.display())?;
-        write!(f, "🔐 cerificate:            {}\n", self.cert.display())?;
+        write!(f, "🔐 certificate:            {}\n", self.cert.display())?;
         write!(f, "🔐 certificate-authority: {}\n", self.cacert.display())?;
         if let Some(oscp) = &self.oscp {
             write!(f, "🔐 oscp:                  {}\n", oscp.display())?;

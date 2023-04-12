@@ -1,15 +1,24 @@
+// === External crates ========================================================
+
+use swagger::{
+    Has,
+    XSpanIdString,
+    ApiError,
+};
 use async_trait::async_trait;
 use std::marker::PhantomData;
-use swagger::{Has, XSpanIdString};
-use swagger::ApiError;
 use log::info;
-use vmd_api::{
+
+// === Internal modules =======================================================
+
+use vmd_rust_server_api::{
     Api,
     GetVmInfoByIdResponse,
     GetVmListResponse,
     VmActionResponse,
 };
-// use serde_json::Value;
+
+// === Implementations ========================================================
 
 #[derive(Copy, Clone)]
 pub struct ApiImpl<C> {
@@ -61,3 +70,5 @@ impl<C> Api<C> for ApiImpl<C> where C: Has<XSpanIdString> + Send + Sync
         Err(ApiError("Generic failure".into()))
     }
 }
+
+// ===  EOF  ==================================================================

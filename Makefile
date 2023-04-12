@@ -1,7 +1,7 @@
 .ONESHELL:
 
 OPENAPI=vmd-api/openapi.yaml
-RUST_API=vmd-api/rust
+RUST_API=vmd-api/rust-server
 RUST_CLIENT_API=vmd-api/rust-client
 
 CERTS=test/auth/certs
@@ -31,7 +31,7 @@ $(RUST_API):
 		-g rust-server \
 		-i $(OPENAPI) \
 		-o $(RUST_API) \
-		--additional-properties=packageName=vmd_api
+		--additional-properties=packageName=vmd_rust_server_api
 
 generate-client-api: $(RUST_CLIENT_API)
 

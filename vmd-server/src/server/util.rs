@@ -1,3 +1,5 @@
+// === Implementations ========================================================
+
 pub type VmdResult<T> = std::result::Result<T, VmdError>;
 
 #[derive(Debug, thiserror::Error)]
@@ -11,8 +13,9 @@ pub enum VmdError {
     #[error("API error: {0}")]
     ApiError(#[from] swagger::ApiError),
     #[error("KVM error: {0}")]
-    KvmError(#[from] crate::kvm_util::KvmError),
+    KvmError(#[from] crate::vmd::kvm_util::KvmError),
     #[error("Invalid certificate: {0}")]
     InvalidCertificate(String),
 }
 
+// === EOF ====================================================================

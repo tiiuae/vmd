@@ -1,29 +1,21 @@
 // === External crates ========================================================
 
-#![allow(unused_imports)]
-use tokio::net::TcpListener;
 use hyper::{
     Server as HyperServer,
-    server::conn::{AddrIncoming, AddrStream},
-    service::Service,
+    server::conn::AddrIncoming,
 };
-use swagger::{
-    auth::MakeAllowAllAuthenticator,
-    EmptyContext,
-};
-use vmd_api::{
-    server::MakeService,
-    server::context::MakeAddContext,
-};
-use std::{
-    path::Path,
-    net::ToSocketAddrs,
-};
-use log::{error, info, trace};
+use swagger::EmptyContext;
+use std::net::ToSocketAddrs;
+use log::info;
 
 // === Internal modules =======================================================
 
-use crate::{
+use vmd_rust_server_api::{
+    server::MakeService,
+    server::context::MakeAddContext,
+};
+
+use super::{
     util::VmdResult,
     api::ApiImpl,
     tls::VmdTlsAcceptor,
@@ -38,10 +30,10 @@ pub(crate) async fn run(args: &Args) -> VmdResult<()>
     println!("{}", args);
     let addr = format!("{}:{}", args.addr, args.port);
     let addr = addr.to_socket_addrs()?.next().unwrap();
-    info!("Listening on {}", addr);
     let service = MakeService::new(ApiImpl::new());
     let service = MakeAddContext::<_, EmptyContext>::new(service);
     let incoming = AddrIncoming::bind(&addr)?;
+    info!("Listening on {}", addr);
     let acceptor = VmdTlsAcceptor::new(
         incoming,
         &args.cacert.as_path(),
