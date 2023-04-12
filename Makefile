@@ -106,4 +106,4 @@ test-openssl-client:
 		-port $(PORT) \
 		-connect localhost \
 
-.PHONY: all generate-api build clean fclean re test generate-sample-certs test-curl-server
+.PHONY: all generate-server-api generate-client-api build clean fclean re test test-server-up regenerate-sample-certs generate-sample-certs test-client test-curl-client test-wget-client test-openssl-client
