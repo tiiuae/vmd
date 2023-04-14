@@ -18,7 +18,7 @@ use crate::server::run::run;
 async fn main() {
     env_logger::init();
     run(&Args::parse()).await.unwrap_or_else(|e| {
-        error!("VIRTUAL MACHINE DAEMON HAS ENCOUNTERED AN ERROR AND MUST EXIT");
+        error!("VMD server has encountered a critical error and will now exit!");
         error!("Error: {}", e);
         exit(1);
     });
