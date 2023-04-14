@@ -1,11 +1,11 @@
 [package]
-name = "vmd_server"
+name = "vmd-server"
 version = "0.1.0"
 edition = "2021"
 authors = ["Ville Ilvonen <ville.ilvonen@unikie.com>", "Julius Koskela <julius.koskela@unikie.com>"]
 
 [dependencies]
-vmd_rust_server_api = { path = "../vmd-api/rust-server" }
+vmd-rust-server-api = { path = "../vmd-api/rust-server" }
 kvm-ioctls = { version = "0.12.0" }
 thiserror = "1.0.38"
 async-trait = "0.1.67"

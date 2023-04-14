@@ -93,8 +93,8 @@ $(DIR):
 clean:
 	rm -rf $(DIR)
 
-fclean: clean
+distclean: clean
 
-re: fclean all
+re: distclean all
 
-.PHONY: all ca server client clean fclean re
+.PHONY: all ca server client clean distclean re

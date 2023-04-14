@@ -5,7 +5,7 @@ edition = "2021"
 authors = ["Julius Koskela <julius.koskela@unikie.com>"]
 
 [dependencies]
-vmd_rust_client_api = { path = "../../vmd-api/rust-client" }
+vmd-rust-client-api = { path = "../../vmd-api/rust-client" }
 thiserror = "1.0.38"
 hyper = { version = "0.14.25", features = ["http1", "full"] }
 log = "0.4.17"

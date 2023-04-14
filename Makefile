@@ -16,7 +16,7 @@ PORT=8080
 HOSTNAME=localhost
 
 # Generate necessary API bindings and make a release build.
-all: generate-server-api build
+all: generate-server-api generate-client-api build
 
 # Generate a server API from the OpenAPI specification. The generated
 # code is located in the `vmd-api/rust-server` directory and used by the
@@ -30,7 +30,7 @@ $(RUST_SERVER_API):
 		-g rust-server \
 		-i $(OPENAPI) \
 		-o $(RUST_SERVER_API) \
-		--additional-properties=packageName=vmd_rust_server_api
+		--additional-properties=packageName=vmd-rust-server-api
 
 # Generate a client API from the OpenAPI specification. The generated
 # code is located in the `vmd-api/rust-client` directory and used only
@@ -44,7 +44,7 @@ $(RUST_CLIENT_API):
 		-i $(OPENAPI) \
 		-o $(RUST_CLIENT_API) \
 		--additional-properties=supportAsync=true \
-		--additional-properties=packageName=vmd_rust_client_api
+		--additional-properties=packageName=vmd-rust-client-api
 
 # Build `vmd` in release mode.
 build:
@@ -59,19 +59,19 @@ clean:
 	cargo clean
 
 # Remove everything that is not part of source control.
-fclean: clean
-	make fclean -C test/auth
+distclean: clean
+	make distclean -C test/auth
 	rm -rf $(RUST_SERVER_API)
 	rm -rf $(RUST_CLIENT_API)
 	rm openapitools.json
 
 # Rebuild everything.
-re: fclean all
+re: distclean all
 
 # Test
 
 # Generate bindings and build code in debug mode for testing.
-build-test: generate-sample-certs generate-client-api generate-server-api build-debug
+build-test: generate-sample-certs generate-server-api generate-client-api build-debug
 
 # Run test suite.
 test: build-test test-server-up
@@ -79,17 +79,12 @@ test: build-test test-server-up
 
 # Run test server.
 test-server-up: build-test
-	cargo run -p vmd_server --release -- \
+	cargo run -p vmd-server --release -- \
 		--hostname localhost \
 		--port $(PORT) \
 		--cacert $(CA_CERT) \
 		--cert $(SERVER_CERT) \
 		--key $(SERVER_KEY)
-
-# Regenerate sample certificates even if they already exist.
-regenerate-sample-certs:
-	make fclean -C test/auth
-	make -C test/auth
 
 # Generate sample certificates if they don't exist.
 generate-sample-certs: $(CERTS)
@@ -132,4 +127,4 @@ test-openssl-client:
 		-port $(PORT) \
 		-connect $(HOSTNAME) \
 
-.PHONY: all generate-server-api generate-client-api build build-debug clean fclean re test test-server-up regenerate-sample-certs generate-sample-certs test-client test-curl-client test-wget-client test-openssl-client
+.PHONY: all generate-server-api generate-client-api build build-debug clean distclean re test test-server-up regenerate-sample-certs generate-sample-certs test-client test-curl-client test-wget-client test-openssl-client
