@@ -45,7 +45,6 @@ impl<C> ApiImpl<C> {
 #[async_trait]
 impl<C> Api<C> for ApiImpl<C> where C: Has<XSpanIdString> + Send + Sync
 {
-    /// Gets virtual machine info by ID
     async fn get_vm_info_by_id(
         &self,
         id: serde_json::Value,
@@ -56,7 +55,6 @@ impl<C> Api<C> for ApiImpl<C> where C: Has<XSpanIdString> + Send + Sync
         Err(ApiError("Generic failure".into()))
     }
 
-    /// Get list IDs for all virtual machines
     async fn get_vm_list(
         &self,
         context: &C) -> Result<GetVmListResponse, ApiError>
@@ -69,7 +67,6 @@ impl<C> Api<C> for ApiImpl<C> where C: Has<XSpanIdString> + Send + Sync
         Ok(GetVmListResponse::ListOfIDsForAllVirtualMachines(value))
     }
 
-    /// Request to perform a control action on the virtual machine by its ID
     async fn vm_action(
         &self,
         action: serde_json::Value,
