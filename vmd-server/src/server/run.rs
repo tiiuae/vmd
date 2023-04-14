@@ -26,7 +26,7 @@ use super::{
 
 pub(crate) async fn run(args: &Args) -> VmdResult<()>
 {
-    println!("⚡    Virtual Machine Daemon Server   ⚡\n");
+    println!("⚡    VMD Server   ⚡\n");
     println!("{}", args);
     let addr = format!("{}:{}", args.hostname, args.port);
     let addr = addr.to_socket_addrs()?.next().unwrap();
