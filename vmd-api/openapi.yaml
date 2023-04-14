@@ -227,7 +227,6 @@ components:
         hypervisor:
           enum:
           - KVM
-          - Xen
           example: KVM
         arch:
           type: string
