@@ -6,5 +6,4 @@ openapitools.json
 target
 trash
 test/auth/certs
-*.lock
 *.pem
