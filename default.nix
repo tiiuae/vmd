@@ -11,8 +11,14 @@ pkgs.rustPlatform.buildRustPackage rec {
     pkg-config
     openssl
     openssl.dev
+	openapi-generator-cli
+	gnumake
   ];
 
+  configurePhase = ''
+    make generate-server-api;
+	make generate-client-api;
+  '';
   cargoLock.lockFile = ./Cargo.lock;
   PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
 }
