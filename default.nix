@@ -19,4 +19,5 @@ in pkgs.rustPlatform.buildRustPackage rec {
 		make generate-server-api;
 		make generate-client-api;
 	'';
+
 }

@@ -18,6 +18,8 @@ HOSTNAME=localhost
 # Generate necessary API bindings and make a release build.
 all: generate-server-api generate-client-api build
 
+generate-bindings: generate-server-api generate-client-api
+
 # Generate a server API from the OpenAPI specification. The generated
 # code is located in the `vmd-api/rust-server` directory and used by the
 # vmd-server crate. In order to work on the server code or to run tests

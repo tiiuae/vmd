@@ -6,4 +6,3 @@ members = [
     "vmd-api/rust-client",
     "test/mtls-client",
 ]
-
