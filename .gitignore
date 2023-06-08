@@ -1,10 +1,8 @@
 .vscode
-server-response.txt
 vmd-api/rust-server
 vmd-api/rust-client
-openapitools.json
 target
 trash
 test/auth/certs
-*.lock
 *.pem
+result
