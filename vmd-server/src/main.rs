@@ -1,7 +1,10 @@
 // === Module declarations ====================================================
 
-mod server;
-mod vmd;
+pub(crate) mod run;
+pub(crate) mod cli;
+mod tls;
+mod util;
+mod api;
 
 // === External crates ========================================================
 

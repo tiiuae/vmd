@@ -6,7 +6,6 @@ authors = ["Ville Ilvonen <ville.ilvonen@unikie.com>", "Julius Koskela <julius.k
 
 [dependencies]
 vmd-rust-server-api = { path = "../vmd-api/rust-server" }
-kvm-ioctls = { version = "0.12.0" }
 thiserror = "1.0.38"
 async-trait = "0.1.67"
 futures = "0.3.27"

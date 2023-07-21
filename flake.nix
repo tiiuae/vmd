@@ -34,6 +34,9 @@
         };
 
         formatter = nixpkgs.legacyPackages.${system}.alejandra;
+        devShells.default = nixpkgs.legacyPackages.${system}.mkShell {
+          nativeBuildInputs = with pkgs; [ pkg-config openssl ];
+        };
       }
     );
 }
