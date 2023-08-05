@@ -50,6 +50,7 @@
               -i vmd-api/openapi.yaml \
               -o vmd-api/rust-client \
               --additional-properties=packageName=vmd-rust-client-api
+            make -C test/auth
           '';
         };
       }
