@@ -2,6 +2,7 @@
 
 pub(crate) mod run;
 pub(crate) mod cli;
+pub(crate) mod vm_tools;
 mod tls;
 mod util;
 mod api;

@@ -28,8 +28,11 @@ use vmd_rust_server_api::{
     GetVmListResponse,
     VmActionResponse,
 };
+use crate::vm_tools::ProcessList;
 
 // === Implementations ========================================================
+
+const HYPERVISORS: [&str; 1] = ["qemu"];
 
 #[derive(Copy, Clone)]
 pub struct ApiImpl<C> {
@@ -61,8 +64,14 @@ impl<C> Api<C> for ApiImpl<C> where C: Has<XSpanIdString> + Send + Sync
     {
         let context = context.clone();
         info!("get_vm_list() - X-Span-ID: {:?}", context.get().0.clone());
-        let ids = [1, 2, 3];
-        let json = serde_json::to_string(&ids).unwrap();
+        let process_list = ProcessList::new();
+        let pids = process_list.processes.iter()
+            .filter(|p| {
+                HYPERVISORS.iter().any(|h| p.command.contains(h))
+            })
+            .map(|p| p.pid)
+            .collect::<Vec<_>>();
+        let json = serde_json::to_string(&pids).unwrap();
         let value = serde_json::from_str(&json).unwrap();
         Ok(GetVmListResponse::ListOfIDsForAllVirtualMachines(value))
     }
