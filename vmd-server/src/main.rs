@@ -12,8 +12,8 @@ use clap::Parser;
 use std::process::exit;
 use log::error;
 
-use crate::server::cli::Args;
-use crate::server::run::run;
+use crate::cli::Args;
+use crate::run::run;
 
 // === Implementations ========================================================
 

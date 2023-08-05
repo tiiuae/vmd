@@ -35,7 +35,7 @@
 
         formatter = nixpkgs.legacyPackages.${system}.alejandra;
         devShells.default = nixpkgs.legacyPackages.${system}.mkShell {
-          nativeBuildInputs = with pkgs; [ pkg-config openssl ];
+          nativeBuildInputs = with pkgs; [ darwin.apple_sdk.frameworks.Security pkg-config openssl ];
         };
       }
     );
