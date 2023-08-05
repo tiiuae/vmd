@@ -35,7 +35,7 @@
 
         formatter = nixpkgs.legacyPackages.${system}.alejandra;
         devShells.default = nixpkgs.legacyPackages.${system}.mkShell {
-          nativeBuildInputs = with pkgs; [ pkg-config openssl openapi-generator-cli ];
+          nativeBuildInputs = with pkgs; [pkg-config openssl openapi-generator-cli];
 
           shellHook = ''
             openapi-generator-cli \
@@ -54,5 +54,11 @@
           '';
         };
       }
-    );
+    )
+    // {
+      nixosModules = {
+        vmd-client = import ./nixos-modules/vmd-client.nix;
+        vmd-server = import ./nixos-modules/vmd-server.nix;
+      };
+    };
 }
