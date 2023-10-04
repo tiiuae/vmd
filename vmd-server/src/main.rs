@@ -1,7 +1,10 @@
 // === Module declarations ====================================================
 
-mod server;
-mod vmd;
+pub(crate) mod run;
+pub(crate) mod cli;
+mod tls;
+mod util;
+mod api;
 
 // === External crates ========================================================
 
@@ -9,8 +12,8 @@ use clap::Parser;
 use std::process::exit;
 use log::error;
 
-use crate::server::cli::Args;
-use crate::server::run::run;
+use crate::cli::Args;
+use crate::run::run;
 
 // === Implementations ========================================================
 

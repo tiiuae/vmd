@@ -6,7 +6,6 @@ authors = ["Ville Ilvonen <ville.ilvonen@unikie.com>", "Julius Koskela <julius.k
 
 [dependencies]
 vmd-rust-server-api = { path = "../vmd-api/rust-server" }
-kvm-ioctls = { version = "0.12.0" }
 thiserror = "1.0.38"
 async-trait = "0.1.67"
 futures = "0.3.27"
@@ -25,3 +24,5 @@ futures-util = "0.3.28"
 mio = "0.8.6"
 serde_derive = "1.0.159"
 serde = { version = "1.0.159", features = ["derive"] }
+regex = "1.9.1"
+sysinfo = { version = "0.29.7", features = ["serde"] }

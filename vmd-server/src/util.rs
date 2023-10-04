@@ -16,8 +16,6 @@ pub enum VmdError {
     ServerError(#[from] hyper::Error),
     #[error("API error: {0}")]
     ApiError(#[from] swagger::ApiError),
-    #[error("KVM error: {0}")]
-    KvmError(#[from] crate::vmd::kvm_util::KvmError),
     #[error("Invalid certificate: {0}")]
     InvalidCertificate(String),
 }

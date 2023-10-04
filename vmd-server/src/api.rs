@@ -19,6 +19,7 @@ use swagger::{
 use async_trait::async_trait;
 use std::marker::PhantomData;
 use log::info;
+use sysinfo::{ProcessExt, System, SystemExt, PidExt};
 
 // === Internal modules =======================================================
 
@@ -30,6 +31,8 @@ use vmd_rust_server_api::{
 };
 
 // === Implementations ========================================================
+
+const HYPERVISORS: [&str; 1] = ["qemu"];
 
 #[derive(Copy, Clone)]
 pub struct ApiImpl<C> {
@@ -55,15 +58,26 @@ impl<C> Api<C> for ApiImpl<C> where C: Has<XSpanIdString> + Send + Sync
         Err(ApiError("Generic failure".into()))
     }
 
-    async fn get_vm_list(
-        &self,
-        context: &C) -> Result<GetVmListResponse, ApiError>
-    {
+    async fn get_vm_list(&self, context: &C) -> Result<GetVmListResponse, ApiError> {
         let context = context.clone();
         info!("get_vm_list() - X-Span-ID: {:?}", context.get().0.clone());
-        let ids = [1, 2, 3];
-        let json = serde_json::to_string(&ids).unwrap();
+
+        // Initialize the sysinfo system and refresh process information
+        let mut sys = System::new();
+        sys.refresh_processes();
+
+        // Filter processes based on hypervisor command names
+        let pids: Vec<u32> = sys.processes()
+            .iter()
+            .filter(|(_pid, process)| {
+                HYPERVISORS.iter().any(|h| process.cmd().iter().any(|cmd| cmd.contains(h)))
+            })
+            .map(|(pid, _process)| pid.as_u32())
+            .collect();
+
+        let json = serde_json::to_string(&pids).unwrap();
         let value = serde_json::from_str(&json).unwrap();
+
         Ok(GetVmListResponse::ListOfIDsForAllVirtualMachines(value))
     }
 
