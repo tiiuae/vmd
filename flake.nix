@@ -54,5 +54,11 @@
           '';
         };
       }
-    );
+    )
+    // {
+      nixosModules = {
+        vmd-client = import ./nixos-modules/vmd-client.nix;
+        vmd-server = import ./nixos-modules/vmd-server.nix;
+      };
+    };
 }
